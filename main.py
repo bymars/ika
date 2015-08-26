@@ -61,8 +61,11 @@ class MainWindow(QtGui.QWidget):
         
     @QtCore.pyqtSlot()
     def on_btnStart_clicked(self):
-        card = Card(13091, self.user_list, self.callback)
-        card.start()
+        threads = []
+        for i in range(5):
+            card = Card(13091, self.user_list, self.callback)
+            threads.append(card)
+            card.start()
 
 if __name__ == '__main__':
 

@@ -6,8 +6,10 @@ import json
 import threading
 from captcha import Captcha
 
+lock = threading.RLock()
+
 class Card(threading.Thread):
-    def __init__(self, card_id, user_list, callback):
+    def __init__(self, card_id, user_list, callback, i):
         threading.Thread.__init__(self)
         
         self.url_get = 'http://hao.17173.com/gift-captcha.html?refresh=1&gift_id=%d&_=%d'
@@ -18,6 +20,7 @@ class Card(threading.Thread):
         self.callback = callback
         
         self.captcha = Captcha()
+        self.i = i
 
         webCookie = http.cookiejar.CookieJar()
         cookie_handler = urllib.request.HTTPCookieProcessor(webCookie)
@@ -29,6 +32,13 @@ class Card(threading.Thread):
 
     def run(self):
         for index, user in enumerate(self.user_list):
+            lock.acquire()
+            if user['state'] > 0:
+                lock.release()
+                continue
+            else:
+                user['state'] = 1
+                lock.release()
             user['state'] = 1
             self.callback(index)
             self.login(user['username'], user['password'])
